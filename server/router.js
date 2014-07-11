@@ -49,6 +49,7 @@ router.post('/magnets', function (req, res) {
 
 // http://localhost:9000/api/magnets/top
 router.get('/magnets/top', function (req, res) {
+  // get the top magnets
   res.send('Hello World!');
 });
 
