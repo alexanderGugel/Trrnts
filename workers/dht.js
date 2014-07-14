@@ -35,10 +35,15 @@ var DHT = function (options) {
 
 // This function will be invoked as soon as a node sends a message.
 DHT.prototype._onMessage = function (msg, rinfo) {
+  console.log('INSIDE _ONMESSAGE');
+  console.log('1');
   msg = bencode.decode(msg);
   msg.t = Buffer.isBuffer(msg.t) && msg.t.length === 2 && msg.t.readUInt16BE(0);
+  console.log('2');
   var callback = this.getPeersCallbacks[msg.t];
+  console.log('3');
   if (callback) {
+    console.log('4');
     var result = {};
     // peers have the torrent.
     result.peers = [];
@@ -54,6 +59,8 @@ DHT.prototype._onMessage = function (msg, rinfo) {
       }
     }
     callback(null, result);
+  }else{
+    console.log('5');
   }
 };
 
@@ -77,7 +84,7 @@ DHT.prototype._idToBuffer = function (id) {
 
 // Sends the get_peers request to a node.
 DHT.prototype.getPeers = function (infoHash, address, callback) {
-  console.log('DHT.getPeers, address -----------------------------------> ' + address);
+  console.log('INSIDE DHT.GETPEERS');
   callback = callback || function () {  };
   var transactionID = this.nextTransactionID++;
   var message = bencode.encode({
@@ -95,7 +102,10 @@ DHT.prototype.getPeers = function (infoHash, address, callback) {
     }
   });
   this.socket.send(message, 0, message.length, address.split(':')[1], address.split(':')[0], function (exception) {
+    console.log('INSIDE SOCKET.SEND');
+    console.log('socket.send, exception -----------------------------------> ' + exception);
     this.getPeersCallbacks[transactionID] = callback;
+    console.log(this.getPeersCallbacks[transactionID]);
     setTimeout(function () {
       delete this.getPeersCallbacks[transactionID];
     }.bind(this), 1000);

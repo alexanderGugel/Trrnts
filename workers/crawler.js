@@ -59,6 +59,7 @@ Crawler.prototype.crawlPeer = function (tStamp, peer){
 Crawler.prototype.crawlNode = function (node) {
   console.log('Crawler.crawlNode, node -----------------------------------' + node);
   this.dht.getPeers(infoHash, node, function (err, resp) {
+    console.log('INSIDE DHT.GETPEERS CALLBACK');
     if(err) {
       console.log('ERROR' + err);
     }
@@ -82,6 +83,7 @@ Crawler.prototype.crawlNode = function (node) {
 };
 
 Crawler.prototype.crawl = function (infoHash) {
+  console.log('BEGIN CRAWLER.CRAWL');
   var numberOfNodes = _.keys(this.nodes).length;
   var numberOfPeers = _.keys(this.peers).length;
 
