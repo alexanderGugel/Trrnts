@@ -60,11 +60,13 @@ Crawler.prototype.crawlNode = function (node) {
   console.log('Crawler.crawlNode, node -----------------------------------' + node);
   this.dht.getPeers(infoHash, node, function (err, resp) {
     var numberOfPeersThisCrawl = _.keys(this.peers).length;
-    console.log('crawlNode numberOfPeersThisCrawl -----------------------------------');
+    var numberOfNodesThisCrawl = _.keys(this.nodes).length;
+    console.log('crawlNode numberOfPeersThisCrawl -----------------------------------' + numberOfPeersThisCrawl);
+    console.log('crawlNode numberOfNodesThisCrawl -----------------------------------' + numberOfNodesThisCrawl);
 
     if(numberOfPeersThisCrawl > 0) {
       console.log('MONEY ----------------------------------- !!!!!!!!');
-    } else {
+    } else if(numberOfNodesThisCrawl > 0) {
       _.each(resp.nodes, function (node) {
         this.nodes.push(node);
       }, this);
