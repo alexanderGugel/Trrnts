@@ -59,6 +59,9 @@ Crawler.prototype.crawlPeer = function (tStamp, peer){
 Crawler.prototype.crawlNode = function (node) {
   console.log('Crawler.crawlNode, node -----------------------------------' + node);
   this.dht.getPeers(infoHash, node, function (err, resp) {
+    if(err) {
+      console.log('ERROR' + err);
+    }
     var numberOfPeersThisCrawl = _.keys(this.peers).length;
     var numberOfNodesThisCrawl = _.keys(this.nodes).length;
     console.log('crawlNode numberOfPeersThisCrawl -----------------------------------' + numberOfPeersThisCrawl);
@@ -68,16 +71,23 @@ Crawler.prototype.crawlNode = function (node) {
       console.log('MONEY ----------------------------------- !!!!!!!!');
     } else if(numberOfNodesThisCrawl > 0) {
       _.each(resp.nodes, function (node) {
+        console.log('node -----------------------------------' + node);
         this.nodes.push(node);
       }, this);
     }
 
-  });
+    this.crawl(infoHash);
+
+  }.bind(this));
 };
 
 Crawler.prototype.crawl = function (infoHash) {
   var numberOfNodes = _.keys(this.nodes).length;
   var numberOfPeers = _.keys(this.peers).length;
+
+  if(numberOfPeers === 0 && numberOfNodes === 0) {
+    console.log(' NO MORE PEERS OR NODES -----------------------------------');
+  }
 
   if(numberOfPeers > 0) {
     console.log('crawl inside if -----------------------------------');
@@ -86,7 +96,7 @@ Crawler.prototype.crawl = function (infoHash) {
     console.log('crawl inside else -----------------------------------');
     // _.each(this.nodes, this.crawlNode, this);
     console.log(this.nodes);
-    this.crawlNode(this.nodes[0]); 
+    this.crawlNode(this.nodes.pop()); 
   }
 
 
