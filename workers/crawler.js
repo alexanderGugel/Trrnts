@@ -56,20 +56,20 @@ Crawler.prototype.crawlPeer = function (tStamp, peer){
 
 };
 
-Crawler.prototype.crawlNode = function (tStamp, node) {
+Crawler.prototype.crawlNode = function (node) {
+  console.log('Crawler.crawlNode, node -----------------------------------' + node);
   this.dht.getPeers(infoHash, node, function (err, resp) {
     var numberOfPeersThisCrawl = _.keys(this.peers).length;
     console.log('crawlNode numberOfPeersThisCrawl -----------------------------------');
 
     if(numberOfPeersThisCrawl > 0) {
       console.log('MONEY ----------------------------------- !!!!!!!!');
+    } else {
+      _.each(resp.nodes, function (node) {
+        this.nodes.push(node);
+      }, this);
     }
-    _.each(resp.nodes, function (node) {
 
-      this.nodes[node] = _.now();
-      //add nodes to redis set
-      // redis.SADD('node', node);
-    }, this);
   });
 };
 
@@ -84,6 +84,7 @@ Crawler.prototype.crawl = function (infoHash) {
     console.log('crawl inside else -----------------------------------');
     // _.each(this.nodes, this.crawlNode, this);
     console.log(this.nodes);
+    this.crawlNode(this.nodes[0]); 
   }
 
 
@@ -91,7 +92,7 @@ Crawler.prototype.crawl = function (infoHash) {
   //   // console.log('----------------------------------- INSIDE CRAWL');
   // }, this);
 
-  this.crawl(infoHash);
+  // this.crawl(infoHash);
 
   console.log(numberOfNodes + ' nodes');
   console.log(numberOfPeers + ' peers');
