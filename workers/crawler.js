@@ -23,9 +23,7 @@ Crawler.prototype.crawl = function (infoHash) {
 
   var numberOfNodes = _.keys(this.nodes).length;
   var numberOfPeers = _.keys(this.peers).length;
-debugger;
-
-
+  debugger;
   _.each(this.nodes, function (tStamp, node) {
     // console.log('----------------------------------- INSIDE CRAWL');
     this.dht.getPeers(infoHash, node, function (err, resp) {
