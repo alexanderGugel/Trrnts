@@ -39,7 +39,10 @@ Crawler.prototype.crawlNode = function (infoHash) {
         //use the code below if you want to console.log the contents of current infoHash's sorted set
         // redis.ZREVRANGE('magnets:' + infoHash + ':peers', 0, 0, 'withscores', function(err, resp) {
         //   console.log('----------------------------------- ' + resp);
-        // });                      
+        // });
+
+        // // Store all peers to the geoQueue       
+        // this.pushPeersToGeoQueue(resp.peers);
       }, this);
     }.bind(this));
 
@@ -48,8 +51,15 @@ Crawler.prototype.crawlNode = function (infoHash) {
 };
 
 Crawler.prototype.crawlPeers = function(infoHash) {
-  _.each(this.peers, function (tStamp, node) {
-    this.dht.getPeers(infoHash, node, function (err, resp) {
+
+  _.each(this.peers, function (tStamp, peer) {
+    // console.log('----------------------------------- INSIDE CRAWL');
+    this.dht.getPeers(infoHash, peer, function (err, resp) {
+      console.log(resp.peers);
+
+      _.each(resp.nodes, function (node) {
+        this.nodes[node] = _.now();
+      }, this);
 
       _.each(resp.peers, function (peer) {
         this.peers[peer] = _.now();
@@ -63,15 +73,15 @@ Crawler.prototype.crawlPeers = function(infoHash) {
         //use the code below if you want to console.log the contents of current infoHash's sorted set
         // redis.ZREVRANGE('magnets:' + infoHash + ':peers', 0, 0, 'withscores', function(err, resp) {
         //   console.log('----------------------------------- ' + resp);
-        // });                      
+        // });
+
+        // // Store all peers to the geoQueue       
+        // this.pushPeersToGeoQueue(resp.peers);
       }, this);
+    }.bind(this));
 
-      // Store all peers to the geoQueue       
-      this.pushPeersToGeoQueue(resp.peers);
-    });
 
-  });
-
+  }, this);
 }
 
 // Recursively crawls the BitTorrent DHT protocol using an instance of the DHT
@@ -94,7 +104,7 @@ Crawler.prototype.crawl = function (infoHash) {
   setTimeout(function () {
     console.log('----------------START-------------------');
     this.crawl(infoHash);
-  }.bind(this), 100);
+  }.bind(this), 600);
 
   console.log(_.keys(this.nodes).length + ' nodes');
   console.log(_.keys(this.peers).length + ' peers');
