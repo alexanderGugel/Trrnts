@@ -23,30 +23,33 @@ Crawler.prototype.crawlNode = function (infoHash) {
     this.dht.getPeers(infoHash, node, function (err, resp) {
 
       _.each(resp.nodes, function (node) {
-
         this.nodes[node] = _.now();
-        //add nodes to redis set
-        redis.SADD('node', node);
       }, this);
 
-      _.each(resp.peers, function (peer) {
-        this.peers[peer] = _.now();
-
-        //add peers to redis set
-        redis.SADD('peer', peer);
-
-        //store each peer in a sorted set for its magnet. We will score each magnet by
-        //seeing how many peers there are for the magnet in the last X minutes
-        redis.ZADD('magnets:' + infoHash + ':peers', _.now(), peer);
-        // redis.ZREVRANGE('magnets:' + infoHash + ':peers', 0, 0, 'withscores', function(err, resp) {
-        //   console.log('----------------------------------- ' + resp);
-        // });                      
-      }, this);
-
-      // Store all peers to the geoQueue       
-      this.pushPeersToGeoQueue(resp.peers);    
     }.bind(this));
   }, this);
+};
+
+Crawler.prototype.crawlPeers = function(infoHash) {
+  _.each(this.peers, function (tStamp, node) {
+    _.each(resp.peers, function (peer) {
+      this.peers[peer] = _.now();
+      //add peers to redis set
+      redis.SADD('peer', peer);
+
+      //store each peer in a sorted set for its magnet. We will score each magnet by
+      //seeing how many peers there are for the magnet in the last X minutes
+      redis.ZADD('magnets:' + infoHash + ':peers', _.now(), peer);
+      // redis.ZREVRANGE('magnets:' + infoHash + ':peers', 0, 0, 'withscores', function(err, resp) {
+      //   console.log('----------------------------------- ' + resp);
+      // });                      
+    }, this);
+
+    // Store all peers to the geoQueue       
+    this.pushPeersToGeoQueue(resp.peers);    
+
+  });
+
 }
 
 // Recursively crawls the BitTorrent DHT protocol using an instance of the DHT
@@ -56,7 +59,7 @@ Crawler.prototype.crawl = function (infoHash) {
   var numberOfNodes = _.keys(this.nodes).length;
   var numberOfPeers = _.keys(this.peers).length;
   if(true){
-    this.crawlNode(infoHash);
+    this.crawlNode(infoHash); 
   }
 
   //current implementation simply kicks the crawler off every 100ms. This is not sustainable
