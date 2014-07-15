@@ -80,17 +80,21 @@ DHT.prototype._idToBuffer = function (id) {
 // Sends the get_peers request to a node.
 DHT.prototype.getPeers = function (infoHash, address, callback) {
   callback = callback || function () {  };
+
+  // if nextTransactionId gets too big, the buffer will exceed its maximum range
   if(this.nextTransactionID > 50000) {
     this.nextTransactionID = 0;
   }
   var transactionID = this.nextTransactionID++;
+
   var message = bencode.encode({
-    t: this._transactionIdToBuffer(transactionID),
+
     //BitTorrent protocol assumes this object has these properties. Single letter styling 
     // is required by the protocol
     // y set to q means it's a query
     // q indicates the kind of query
     // a are the named arguments to the query
+    t: this._transactionIdToBuffer(transactionID),
     y: 'q',
     q: 'get_peers',
     a: {
@@ -98,6 +102,7 @@ DHT.prototype.getPeers = function (infoHash, address, callback) {
       info_hash: this._idToBuffer(infoHash)
     }
   });
+
   this.socket.send(message, 0, message.length, address.split(':')[1], address.split(':')[0], function (exception) {
     this.getPeersCallbacks[transactionID] = callback;
     setTimeout(function () {

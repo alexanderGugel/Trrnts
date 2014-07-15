@@ -20,6 +20,12 @@ var Crawler = function () {
 // Recursively crawls the BitTorrent DHT protocol using an instance of the DHT
 // class, which is a property of the instance of the crawler.
 Crawler.prototype.crawl = function (infoHash) {
+
+  var numberOfNodes = _.keys(this.nodes).length;
+  var numberOfPeers = _.keys(this.peers).length;
+debugger;
+
+
   _.each(this.nodes, function (tStamp, node) {
     // console.log('----------------------------------- INSIDE CRAWL');
     this.dht.getPeers(infoHash, node, function (err, resp) {
