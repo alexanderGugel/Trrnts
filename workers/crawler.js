@@ -17,12 +17,7 @@ var Crawler = function () {
   this.peers = {};
 };
 
-// Recursively crawls the BitTorrent DHT protocol using an instance of the DHT
-// class, which is a property of the instance of the crawler.
-Crawler.prototype.crawl = function (infoHash) {
-
-  var numberOfNodes = _.keys(this.nodes).length;
-  var numberOfPeers = _.keys(this.peers).length;
+Crawler.prototype.crawlNode = function (infoHash) {
   _.each(this.nodes, function (tStamp, node) {
     // console.log('----------------------------------- INSIDE CRAWL');
     this.dht.getPeers(infoHash, node, function (err, resp) {
@@ -52,6 +47,17 @@ Crawler.prototype.crawl = function (infoHash) {
       this.pushPeersToGeoQueue(resp.peers);    
     }.bind(this));
   }, this);
+}
+
+// Recursively crawls the BitTorrent DHT protocol using an instance of the DHT
+// class, which is a property of the instance of the crawler.
+Crawler.prototype.crawl = function (infoHash) {
+
+  var numberOfNodes = _.keys(this.nodes).length;
+  var numberOfPeers = _.keys(this.peers).length;
+  if(true){
+    this.crawlNode(infoHash);
+  }
 
   //current implementation simply kicks the crawler off every 100ms. This is not sustainable
   //and will be fixed in the future.
