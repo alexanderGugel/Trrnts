@@ -23,7 +23,6 @@ Crawler.prototype.crawl = function (infoHash) {
 
   var numberOfNodes = _.keys(this.nodes).length;
   var numberOfPeers = _.keys(this.peers).length;
-  debugger;
   _.each(this.nodes, function (tStamp, node) {
     // console.log('----------------------------------- INSIDE CRAWL');
     this.dht.getPeers(infoHash, node, function (err, resp) {
@@ -59,8 +58,9 @@ Crawler.prototype.crawl = function (infoHash) {
   // Crawls every node every 100 ms, which is not efficient. We only want to
   // crawl the the new nodes/ peers. TODO
   setTimeout(function () {
+    console.log('----------------START-------------------');
     this.crawl(infoHash);
-  }.bind(this), 100);
+  }.bind(this), 1000);
 
   console.log(_.keys(this.nodes).length + ' nodes');
   console.log(_.keys(this.peers).length + ' peers');

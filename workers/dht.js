@@ -22,6 +22,11 @@ var DHT = function (options) {
   // We need to define a node ID for our DHT instance, since it interacts with
   // the BitTorrent DHT network as a regular client.
   this.nodeID = options.nodeID || hat(160);
+
+  // during this._onMessage, we need to know if there are any peers left to crawl or not
+  // We will toggle this variable from inside crawler.js at appropriate times
+  this.needMorePeers = true;
+
   // Port 6881 works best.
   this.port = options.port || '6881';
   this.socket = dgram.createSocket('udp4');
@@ -47,10 +52,13 @@ DHT.prototype._onMessage = function (msg, rinfo) {
     // nodes do not have the torrent, but are the nearest entries in the Hash
     // Table to it.
     result.nodes = [];
+    // If this message contains peers
     if (msg.r && msg.r.values) {
+      console.log('----------------------------------- THERE ARE PEERS');
       result.peers = _.map(msg.r.values, compact2string);
-    }
-    if (msg.r && msg.r.nodes && Buffer.isBuffer(msg.r.nodes)) {
+    // If there are nodes, and there are no peers left to crawl
+    }else if (msg.r && msg.r.nodes && Buffer.isBuffer(msg.r.nodes) && this.needMorePeers) {
+      console.log('THERE ARE NODES -----------------------------------');
       for (var i = 0; i < msg.r.nodes.length; i += 26) {
         result.nodes.push(compact2string(msg.r.nodes.slice(i + 20, i + 26)));
       }
