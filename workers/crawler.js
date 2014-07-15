@@ -24,35 +24,37 @@ Crawler.prototype.crawl = function (infoHash) {
   var numberOfNodes = _.keys(this.nodes).length;
   var numberOfPeers = _.keys(this.peers).length;
   debugger;
-  _.each(this.nodes, function (tStamp, node) {
-    // console.log('----------------------------------- INSIDE CRAWL');
-    this.dht.getPeers(infoHash, node, function (err, resp) {
+  if(numberOfPeers === 0) {
+    _.each(this.nodes, function (tStamp, node) {
+      // console.log('----------------------------------- INSIDE CRAWL');
+      this.dht.getPeers(infoHash, node, function (err, resp) {
 
-      _.each(resp.nodes, function (node) {
+        _.each(resp.nodes, function (node) {
 
-        this.nodes[node] = _.now();
-        //add nodes to redis set
-        redis.SADD('node', node);
-      }, this);
+          this.nodes[node] = _.now();
+          //add nodes to redis set
+          redis.SADD('node', node);
+        }, this);
 
-      _.each(resp.peers, function (peer) {
-        this.peers[peer] = _.now();
+        _.each(resp.peers, function (peer) {
+          this.peers[peer] = _.now();
 
-        //add peers to redis set
-        redis.SADD('peer', peer);
+          //add peers to redis set
+          redis.SADD('peer', peer);
 
-        //store each peer in a sorted set for its magnet. We will score each magnet by
-        //seeing how many peers there are for the magnet in the last X minutes
-        redis.ZADD('magnets:' + infoHash + ':peers', _.now(), peer);
-        // redis.ZREVRANGE('magnets:' + infoHash + ':peers', 0, 0, 'withscores', function(err, resp) {
-        //   console.log('----------------------------------- ' + resp);
-        // });                      
-      }, this);
+          //store each peer in a sorted set for its magnet. We will score each magnet by
+          //seeing how many peers there are for the magnet in the last X minutes
+          redis.ZADD('magnets:' + infoHash + ':peers', _.now(), peer);
+          // redis.ZREVRANGE('magnets:' + infoHash + ':peers', 0, 0, 'withscores', function(err, resp) {
+          //   console.log('----------------------------------- ' + resp);
+          // });                      
+        }, this);
 
-      // Store all peers to the geoQueue       
-      this.pushPeersToGeoQueue(resp.peers);    
-    }.bind(this));
-  }, this);
+        // Store all peers to the geoQueue       
+        this.pushPeersToGeoQueue(resp.peers);    
+      }.bind(this));
+    }, this);
+  }
 
   //current implementation simply kicks the crawler off every 100ms. This is not sustainable
   //and will be fixed in the future.
