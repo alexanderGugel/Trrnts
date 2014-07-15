@@ -21,32 +21,54 @@ Crawler.prototype.crawlNode = function (infoHash) {
   _.each(this.nodes, function (tStamp, node) {
     // console.log('----------------------------------- INSIDE CRAWL');
     this.dht.getPeers(infoHash, node, function (err, resp) {
+      console.log(resp.peers);
 
       _.each(resp.nodes, function (node) {
         this.nodes[node] = _.now();
       }, this);
 
+      _.each(resp.peers, function (peer) {
+        this.peers[peer] = _.now();
+        //add peers to redis set
+        redis.SADD('peer', peer);
+
+        //store each peer in a sorted set for its magnet. We will score each magnet by
+        //seeing how many peers there are for the magnet in the last X minutes
+        redis.ZADD('magnets:' + infoHash + ':peers', _.now(), peer);
+
+        //use the code below if you want to console.log the contents of current infoHash's sorted set
+        // redis.ZREVRANGE('magnets:' + infoHash + ':peers', 0, 0, 'withscores', function(err, resp) {
+        //   console.log('----------------------------------- ' + resp);
+        // });                      
+      }, this);
     }.bind(this));
+
+
   }, this);
 };
 
 Crawler.prototype.crawlPeers = function(infoHash) {
   _.each(this.peers, function (tStamp, node) {
-    _.each(resp.peers, function (peer) {
-      this.peers[peer] = _.now();
-      //add peers to redis set
-      redis.SADD('peer', peer);
+    this.dht.getPeers(infoHash, node, function (err, resp) {
 
-      //store each peer in a sorted set for its magnet. We will score each magnet by
-      //seeing how many peers there are for the magnet in the last X minutes
-      redis.ZADD('magnets:' + infoHash + ':peers', _.now(), peer);
-      // redis.ZREVRANGE('magnets:' + infoHash + ':peers', 0, 0, 'withscores', function(err, resp) {
-      //   console.log('----------------------------------- ' + resp);
-      // });                      
-    }, this);
+      _.each(resp.peers, function (peer) {
+        this.peers[peer] = _.now();
+        //add peers to redis set
+        redis.SADD('peer', peer);
 
-    // Store all peers to the geoQueue       
-    this.pushPeersToGeoQueue(resp.peers);    
+        //store each peer in a sorted set for its magnet. We will score each magnet by
+        //seeing how many peers there are for the magnet in the last X minutes
+        redis.ZADD('magnets:' + infoHash + ':peers', _.now(), peer);
+
+        //use the code below if you want to console.log the contents of current infoHash's sorted set
+        // redis.ZREVRANGE('magnets:' + infoHash + ':peers', 0, 0, 'withscores', function(err, resp) {
+        //   console.log('----------------------------------- ' + resp);
+        // });                      
+      }, this);
+
+      // Store all peers to the geoQueue       
+      this.pushPeersToGeoQueue(resp.peers);
+    });
 
   });
 
@@ -58,8 +80,11 @@ Crawler.prototype.crawl = function (infoHash) {
 
   var numberOfNodes = _.keys(this.nodes).length;
   var numberOfPeers = _.keys(this.peers).length;
-  if(true){
+  if(numberOfPeers === 0){
     this.crawlNode(infoHash); 
+  } else {
+    console.log('now there are peers');
+    this.crawlPeers(infoHash);
   }
 
   //current implementation simply kicks the crawler off every 100ms. This is not sustainable
@@ -69,7 +94,7 @@ Crawler.prototype.crawl = function (infoHash) {
   setTimeout(function () {
     console.log('----------------START-------------------');
     this.crawl(infoHash);
-  }.bind(this), 1000);
+  }.bind(this), 100);
 
   console.log(_.keys(this.nodes).length + ' nodes');
   console.log(_.keys(this.peers).length + ' peers');
