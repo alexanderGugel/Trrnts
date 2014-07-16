@@ -98,10 +98,10 @@ Crawler.prototype.crawl = function (infoHash) {
   //and will be fixed in the future.
   // Crawls every node every 100 ms, which is not efficient. We only want to
   // crawl the the new nodes/ peers. TODO
-  setTimeout(function () {
+  // setTimeout(function () {
     // console.log('----------------START-------------------');
-    this.crawl(infoHash);
-  }.bind(this), 1000);
+    // this.crawl(infoHash);
+  // }.bind(this), 1000);
 
   // console.log(numberOfNodes +  ' nodes');
   // console.log(numberOfPeers + ' peers');
