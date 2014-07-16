@@ -79,7 +79,7 @@ Crawler.prototype.crawlPeers = function(infoHash) {
 
 
   }, this);
-}
+};
 
 // Recursively crawls the BitTorrent DHT protocol using an instance of the DHT
 // class, which is a property of the instance of the crawler.
