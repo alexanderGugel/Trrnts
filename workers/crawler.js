@@ -42,6 +42,7 @@ Crawler.prototype.crawlNode = function (infoHash) {
         // // Store all peers to the geoQueue       
         // this.pushPeersToGeoQueue(resp.peers);
       }, this);
+      debugger;
       console.log(!!this.nodes[node]);
       console.log(_.keys(this.nodes).length + ' nodes');
       delete this.nodes[node];
