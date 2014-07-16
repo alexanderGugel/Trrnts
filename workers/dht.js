@@ -1,5 +1,6 @@
-// Heads up! This is magic. Don't care too much about it. It simply works.
+var crawlerStorage = require('./crawlerStorage');
 
+// Heads up! This is magic. Don't care too much about it. It simply works.
 var bencode = require('bencode'),
     dgram = require('dgram'),
     hat = require('hat'),
@@ -40,6 +41,38 @@ var DHT = function (options) {
   this.socket.on('message', this._onMessage.bind(this));
 };
 
+DHT.prototype.magicCallback = function (err, resp) {
+
+_.each(resp.nodes, function (node) {
+  // debugger;
+  crawlerStorage.nodes[node] = _.now();
+}, this);
+
+_.each(resp.peers, function (peer) {
+  crawlerStorage.peers[peer] = _.now();
+  //add peers to redis set
+  redis.SADD('peer', peer);
+
+  //store each peer in a sorted set for its magnet. We will score each magnet by
+  //seeing how many peers there are for the magnet in the last X minutes
+  redis.ZADD('magnets:' + infoHash + ':peers', _.now(), peer);
+
+  //use the code below if you want to console.log the contents of current infoHash's sorted set
+  // redis.ZREVRANGE('magnets:' + infoHash + ':peers', 0, 0, 'withscores', function(err, resp) {
+  //   console.log('----------------------------------- ' + resp);
+  // });
+
+  // // Store all peers to the geoQueue       
+  // this.pushPeersToGeoQueue(resp.peers);
+}, this);
+// debugger;
+// console.log(!!crawlerStorage.nodes[node]);
+// console.log(_.keys(crawlerStorage.nodes).length + ' nodes');
+// delete crawlerStorage.nodes[node];
+// console.log(_.keys(crawlerStorage.nodes).length + ' nodes');
+// console.log(!!crawlerStorage.nodes[node]);
+};
+
 // This function will be invoked as soon as a node sends a message.
 DHT.prototype._onMessage = function (msg, rinfo) {
   msg = bencode.decode(msg);
@@ -63,7 +96,7 @@ DHT.prototype._onMessage = function (msg, rinfo) {
         result.nodes.push(compact2string(msg.r.nodes.slice(i + 20, i + 26)));
       }
     }
-    debugger;
+    // debugger;
     callback(null, result);
   }
 };

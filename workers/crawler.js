@@ -1,4 +1,5 @@
 var DHT = require('./dht');
+var crawlerStorage = require('./crawlerStorage');
 var redis = require('../redis.js');
 var _ = require('lodash');
 
@@ -9,46 +10,51 @@ var Crawler = function () {
   // Addresses as keys, since we need constant time insert operations and unique
   // entries (inserts every node only once).
   // We need a few "bootstrap nodes" as entry points for getting started.
-  this.nodes = {
-    'router.bittorrent.com:6881': timestamp,
-    'router.utorrent.com:6881': timestamp,
-    'dht.transmissionbt.com:6881': timestamp
-  };
-  this.peers = {};
+  // crawlerStorage.nodes = {
+  //   'router.bittorrent.com:6881': timestamp,
+  //   'router.utorrent.com:6881': timestamp,
+  //   'dht.transmissionbt.com:6881': timestamp
+  // };
+  // crawlerStorage.peers = {};
 };
 
 Crawler.prototype.crawlNode = function (infoHash) {
-  _.each(this.nodes, function (tStamp, node) {
+  _.each(crawlerStorage.nodes, function (tStamp, node) {
+    
+
     this.dht.getPeers(infoHash, node, function (err, resp) {
-
-      _.each(resp.nodes, function (node) {
-        this.nodes[node] = _.now();
-      }, this);
-
-      _.each(resp.peers, function (peer) {
-        this.peers[peer] = _.now();
-        //add peers to redis set
-        redis.SADD('peer', peer);
-
-        //store each peer in a sorted set for its magnet. We will score each magnet by
-        //seeing how many peers there are for the magnet in the last X minutes
-        redis.ZADD('magnets:' + infoHash + ':peers', _.now(), peer);
-
-        //use the code below if you want to console.log the contents of current infoHash's sorted set
-        // redis.ZREVRANGE('magnets:' + infoHash + ':peers', 0, 0, 'withscores', function(err, resp) {
-        //   console.log('----------------------------------- ' + resp);
-        // });
-
-        // // Store all peers to the geoQueue       
-        // this.pushPeersToGeoQueue(resp.peers);
-      }, this);
-      debugger;
-      console.log(!!this.nodes[node]);
-      console.log(_.keys(this.nodes).length + ' nodes');
-      delete this.nodes[node];
-      console.log(_.keys(this.nodes).length + ' nodes');
-      console.log(!!this.nodes[node]);
+      this.dht.magicCallback(err, resp);
     }.bind(this));
+    // this.dht.getPeers(infoHash, node, function (err, resp) {
+
+    //   _.each(resp.nodes, function (node) {
+    //     crawlerStorage.nodes[node] = _.now();
+    //   }, this);
+
+    //   _.each(resp.peers, function (peer) {
+    //     crawlerStorage.peers[peer] = _.now();
+    //     //add peers to redis set
+    //     redis.SADD('peer', peer);
+
+    //     //store each peer in a sorted set for its magnet. We will score each magnet by
+    //     //seeing how many peers there are for the magnet in the last X minutes
+    //     redis.ZADD('magnets:' + infoHash + ':peers', _.now(), peer);
+
+    //     //use the code below if you want to console.log the contents of current infoHash's sorted set
+    //     // redis.ZREVRANGE('magnets:' + infoHash + ':peers', 0, 0, 'withscores', function(err, resp) {
+    //     //   console.log('----------------------------------- ' + resp);
+    //     // });
+
+    //     // // Store all peers to the geoQueue       
+    //     // this.pushPeersToGeoQueue(resp.peers);
+    //   }, this);
+    //   debugger;
+    //   console.log(!!crawlerStorage.nodes[node]);
+    //   console.log(_.keys(crawlerStorage.nodes).length + ' nodes');
+    //   delete crawlerStorage.nodes[node];
+    //   console.log(_.keys(crawlerStorage.nodes).length + ' nodes');
+    //   console.log(!!crawlerStorage.nodes[node]);
+    // }.bind(this));
 
 
   }, this);
@@ -56,11 +62,11 @@ Crawler.prototype.crawlNode = function (infoHash) {
 
 Crawler.prototype.crawlPeers = function(infoHash) {
 
-  _.each(this.peers, function (tStamp, peer) {
+  _.each(crawlerStorage.peers, function (tStamp, peer) {
     this.dht.getPeers(infoHash, peer, function (err, resp) {
 
       _.each(resp.peers, function (peer) {
-        this.peers[peer] = _.now();
+        crawlerStorage.peers[peer] = _.now();
         //add peers to redis set
         redis.SADD('peer', peer);
 
@@ -80,14 +86,14 @@ Crawler.prototype.crawlPeers = function(infoHash) {
 
 
   }, this);
-}
+};
 
 // Recursively crawls the BitTorrent DHT protocol using an instance of the DHT
 // class, which is a property of the instance of the crawler.
 Crawler.prototype.crawl = function (infoHash) {
 
-  var numberOfNodes = _.keys(this.nodes).length;
-  var numberOfPeers = _.keys(this.peers).length;
+  var numberOfNodes = _.keys(crawlerStorage.nodes).length;
+  var numberOfPeers = _.keys(crawlerStorage.peers).length;
   if(numberOfPeers === 0){
     this.crawlNode(infoHash); 
   } else {
