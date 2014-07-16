@@ -6,7 +6,6 @@ var _ = require('lodash');
 // Uses an DHT instance in order to crawl the network.
 var Crawler = function () {
   this.dht = new DHT();
-  var timestamp = _.now();
   // Addresses as keys, since we need constant time insert operations and unique
   // entries (inserts every node only once).
   // We need a few "bootstrap nodes" as entry points for getting started.
@@ -94,6 +93,7 @@ Crawler.prototype.crawl = function (infoHash) {
 
   var numberOfNodes = _.keys(crawlerStorage.nodes).length;
   var numberOfPeers = _.keys(crawlerStorage.peers).length;
+  debugger;
   if(numberOfPeers === 0){
     this.crawlNode(infoHash); 
   } else {
