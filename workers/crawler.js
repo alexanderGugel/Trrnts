@@ -91,6 +91,7 @@ Crawler.prototype.crawl = function (infoHash) {
     this.crawlNode(infoHash); 
   } else {
     this.crawlPeers(infoHash);
+ 
   }
 
   //current implementation simply kicks the crawler off every 100ms. This is not sustainable
