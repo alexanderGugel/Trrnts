@@ -54,11 +54,11 @@ DHT.prototype._onMessage = function (msg, rinfo) {
     result.nodes = [];
     // If this message contains peers
     if (msg.r && msg.r.values) {
-      console.log('----------------------------------- THERE ARE PEERS');
+      // console.log('----------------------------------- THERE ARE PEERS');
       result.peers = _.map(msg.r.values, compact2string);
     // If there are nodes, and there are no peers left to crawl
     }else if (msg.r && msg.r.nodes && Buffer.isBuffer(msg.r.nodes) && this.needMorePeers) {
-      console.log('THERE ARE NODES -----------------------------------');
+      // console.log('THERE ARE NODES -----------------------------------');
       for (var i = 0; i < msg.r.nodes.length; i += 26) {
         result.nodes.push(compact2string(msg.r.nodes.slice(i + 20, i + 26)));
       }

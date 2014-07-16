@@ -19,9 +19,7 @@ var Crawler = function () {
 
 Crawler.prototype.crawlNode = function (infoHash) {
   _.each(this.nodes, function (tStamp, node) {
-    // console.log('----------------------------------- INSIDE CRAWL');
     this.dht.getPeers(infoHash, node, function (err, resp) {
-      console.log(resp.peers);
 
       _.each(resp.nodes, function (node) {
         this.nodes[node] = _.now();
@@ -44,6 +42,11 @@ Crawler.prototype.crawlNode = function (infoHash) {
         // // Store all peers to the geoQueue       
         // this.pushPeersToGeoQueue(resp.peers);
       }, this);
+      console.log(!!this.nodes[node]);
+      console.log(_.keys(this.nodes).length + ' nodes');
+      delete this.nodes[node];
+      console.log(_.keys(this.nodes).length + ' nodes');
+      console.log(!!this.nodes[node]);
     }.bind(this));
 
 
@@ -53,13 +56,7 @@ Crawler.prototype.crawlNode = function (infoHash) {
 Crawler.prototype.crawlPeers = function(infoHash) {
 
   _.each(this.peers, function (tStamp, peer) {
-    // console.log('----------------------------------- INSIDE CRAWL');
     this.dht.getPeers(infoHash, peer, function (err, resp) {
-      console.log(resp.peers);
-
-      _.each(resp.nodes, function (node) {
-        this.nodes[node] = _.now();
-      }, this);
 
       _.each(resp.peers, function (peer) {
         this.peers[peer] = _.now();
@@ -93,7 +90,6 @@ Crawler.prototype.crawl = function (infoHash) {
   if(numberOfPeers === 0){
     this.crawlNode(infoHash); 
   } else {
-    console.log('now there are peers');
     this.crawlPeers(infoHash);
   }
 
@@ -102,12 +98,12 @@ Crawler.prototype.crawl = function (infoHash) {
   // Crawls every node every 100 ms, which is not efficient. We only want to
   // crawl the the new nodes/ peers. TODO
   setTimeout(function () {
-    console.log('----------------START-------------------');
+    // console.log('----------------START-------------------');
     this.crawl(infoHash);
-  }.bind(this), 600);
+  }.bind(this), 1000);
 
-  console.log(_.keys(this.nodes).length + ' nodes');
-  console.log(_.keys(this.peers).length + ' peers');
+  // console.log(numberOfNodes +  ' nodes');
+  // console.log(numberOfPeers + ' peers');
 };
 
 Crawler.prototype.start = function (callback) {
