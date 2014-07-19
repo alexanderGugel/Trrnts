@@ -266,6 +266,23 @@ angular.module('trrntsApp.directives', [])
   return {
     restrict: 'A',
     link: function (scope, element, attrs) {
+      var generatePositions = function () {
+        var positions = [];
+        //this is each entry in geo:ll
+        var latAndLong = [[12.888, 12.888]];
+        for (var i = 0; i < latAndLong.length; i++) {
+          var spot = {
+            //this needs to be the geo:ll score
+            radius: 60,
+            fillKey: 'torrents'
+          };
+          spot.latitude = latAndLong[i][0];
+          spot.longitude = latAndLong[i][1];
+          positions.push(spot);
+        }
+        return positions;
+      };
+      
       var generateFakePositions = function () {
         var fakePositions = [];
         var fakeLatAndLong = [[49.45045869, -65.15636998],
@@ -302,9 +319,13 @@ angular.module('trrntsApp.directives', [])
       });
 
       // Generate Fake Stats
-      var fakePositions = generateFakePositions();
+      // var fakePositions = generateFakePositions();
       // console.log(fakePositions);
-      map.bubbles(fakePositions);
+      // map.bubbles(fakePositions);
+
+      // Generate Bubbles on Map based on geo-lite data in redis
+      var positions = generatePositions();
+      map.bubbles(positions);
     },
   };
 });

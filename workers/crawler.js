@@ -102,10 +102,10 @@ socket.on('message', function (msg, rinfo) {
 
         redis.pfadd('peers', peer, function (err, added) {
           if (added > 0) {
-            redis.zincrby('geo:countries', 1, geo.country);
-            redis.zincrby('geo:regions', 1, geo.region);
-            redis.zincrby('geo:cities', 1, geo.city);
-            redis.zincrby('geo:ll', 1, geo.ll);
+            redis.zincrby('geo:countries:' + infoHash, 1, geo.country);
+            redis.zincrby('geo:regions:' + infoHash, 1, geo.region);
+            redis.zincrby('geo:cities:' + infoHash, 1, geo.city);
+            redis.zincrby('geo:ll:' + infoHash, 1, geo.ll);
           }
         });
 
