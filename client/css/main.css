@@ -305,3 +305,30 @@ leverages an approach called 'mobile first' (http://zurb.com/word/mobile-first).
 .search-results {
   width:100%;
 }
+
+.navbar {
+  display:block;
+  width:100%;
+  background:#fff;
+}
+
+.navbar-nav {
+  margin:0.5em 0 0.5em 0;
+  padding:0;
+  text-align: center;
+  list-style: none;
+}
+
+.navbar-nav li {
+  display: inline-block;
+  padding: 0.5em 5em 0.5em 5em;
+}
+
+.navbar-nav li a {
+  text-decoration: none;
+  color: black;
+}
+
+.navbar-selected {
+  font-weight:bold;
+}
